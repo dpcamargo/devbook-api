@@ -5,12 +5,15 @@ import (
 	"log"
 	"net/http"
 
+	"api/src/config"
 	"api/src/router"
 )
 
 func main() {
-	fmt.Println("Iniciando o servidor...")
+	config.Carregar()
+	fmt.Printf("Running on http://localhost:%d\n", config.Porta)
+	fmt.Println("String de conexão com o banco de dados:", config.StringConexaoBanco)
 	r := router.Gerar()
 
-	log.Fatal(http.ListenAndServe(":5000", r))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Porta), r))
 }
