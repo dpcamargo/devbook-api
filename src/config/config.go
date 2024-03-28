@@ -25,9 +25,11 @@ func Carregar() {
 		Porta = 9000
 	}
 
-	StringConexaoBanco = fmt.Sprintf("%s:%s@/%s?charset=UTF8MB4&parseTime=True&loc=Local",
+	StringConexaoBanco = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=UTF8MB4&parseTime=True&loc=Local",
 		os.Getenv("MYSQL_USERNAME"),
 		os.Getenv("MYSQL_USER_PASSWORD"),
 		os.Getenv("MYSQL_HOST"),
+		os.Getenv("MYSQL_HOST_PORT"),
+		os.Getenv("MYSQL_DATABASE"),
 	)
 }
