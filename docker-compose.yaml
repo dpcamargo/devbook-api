@@ -1,0 +1,32 @@
+# optimized for macos
+version: "3.7"
+services:
+  mysql-local:
+    container_name: mysql-local
+    image: "mysql:8.0-debian"
+    command: >
+      --default-authentication-plugin=caching_sha2_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    restart: unless-stopped
+    networks:
+      - default
+    ports:
+      - "${MYSQL_HOST_PORT:-3306}:${MYSQL_CONT_PORT:-3306}"
+    expose:
+      - "${MYSQL_HOST_PORT:-3306}"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-root}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE:-devbook}"
+      MYSQL_USER: "${MYSQL_USERNAME:-user}"
+      MYSQL_PASSWORD: "${MYSQL_USER_PASSWORD:-password}"
+      MYSQL_ROOT_HOST: "%"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./platform/database:/docker-entrypoint-initdb.d
+volumes:
+  mysql_data:
+    driver: local
+networks:
+  default:
+    # driver: bridge
