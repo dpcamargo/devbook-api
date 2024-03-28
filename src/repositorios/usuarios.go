@@ -95,3 +95,22 @@ func (repositorio Usuarios) BuscarPorID(ID uint64) (modelos.Usuario, error) {
 
 	return usuario, nil
 }
+
+func (repositorio Usuarios) Atualizar(usuarioID uint64, usuario modelos.Usuario) error {
+	statement, err := repositorio.db.Prepare(
+		"UPDATE usuarios SET nome = ?, nick = ?, email = ? WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err := statement.Exec(
+		usuario.Nome,
+		usuario.Nick,
+		usuario.Email,
+		usuarioID,
+	); err != nil {
+		return err
+	}
+	return nil
+}

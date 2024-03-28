@@ -20,12 +20,14 @@ func CriarUsuario(w http.ResponseWriter, r *http.Request) {
 		respostas.Erro(w, http.StatusUnprocessableEntity, err)
 		return
 	}
+
 	var usuario modelos.Usuario
+
 	if err = json.Unmarshal(corpoRequest, &usuario); err != nil {
 		respostas.Erro(w, http.StatusBadRequest, err)
 		return
 	}
-	if err := usuario.Preparar(); err != nil {
+	if err := usuario.Preparar("cadastro"); err != nil {
 		respostas.Erro(w, http.StatusBadRequest, err)
 		return
 	}
@@ -89,7 +91,43 @@ func BuscarUsuario(w http.ResponseWriter, r *http.Request) {
 	respostas.JSON(w, http.StatusOK, usuario)
 }
 func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Atualizando usuário"))
+	parametros := mux.Vars(r)
+
+	usuarioID, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
+	if err != nil {	
+		respostas.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	corpoRequest, err := io.ReadAll(r.Body)
+	if err != nil {
+		respostas.Erro(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	var usuario modelos.Usuario
+	if err := json.Unmarshal(corpoRequest, &usuario); err != nil {
+		respostas.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := usuario.Preparar("edicao"); err != nil {
+		respostas.Erro(w, http.StatusBadRequest, err)
+	}
+
+	db, err := banco.Conectar()
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	err = repositorio.Atualizar(usuarioID, usuario)
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+	}
+
+	respostas.JSON(w, http.StatusNoContent, nil)
 }
 func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Deletando usuário"))
