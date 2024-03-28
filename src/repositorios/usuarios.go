@@ -114,3 +114,17 @@ func (repositorio Usuarios) Atualizar(usuarioID uint64, usuario modelos.Usuario)
 	}
 	return nil
 }
+
+func (repositorio Usuarios) Deletar(usuarioID uint64) error {
+	statement, err := repositorio.db.Prepare("DELETE FROM usuarios WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(usuarioID); err != nil {
+		return err
+	}
+
+	return nil
+}
