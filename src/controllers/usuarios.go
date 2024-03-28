@@ -8,7 +8,10 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 func CriarUsuario(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +68,25 @@ func BuscarUsuarios(w http.ResponseWriter, r *http.Request) {
 }
 
 func BuscarUsuario(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Buscando usuário"))
+	parametros := mux.Vars(r)
+
+	usuarioID, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
+	if err != nil {
+		respostas.Erro(w, http.StatusBadRequest, err)
+	}
+
+	db, err := banco.Conectar()
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	usuario, err := repositorio.BuscarPorID(usuarioID)
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+	}
+	respostas.JSON(w, http.StatusOK, usuario)
 }
 func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Atualizando usuário"))
