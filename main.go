@@ -9,6 +9,18 @@ import (
 	"api/src/router"
 )
 
+// Geração de Secret com crypto.rand e base64 encoding
+// func init() {
+// 	chave := make([]byte, 64)
+
+// 	if _, err := rand.Read(chave); err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	stringBase64 := base64.StdEncoding.EncodeToString(chave)
+// 	fmt.Println(stringBase64)
+// }
+
 func main() {
 	config.Carregar()
 	r := router.Gerar()

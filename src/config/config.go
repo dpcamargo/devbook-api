@@ -12,6 +12,7 @@ import (
 var (
 	StringConexaoBanco = ""
 	Porta              = 0
+	SecretKey          []byte
 )
 
 func Carregar() {
@@ -32,4 +33,8 @@ func Carregar() {
 		os.Getenv("MYSQL_HOST_PORT"),
 		os.Getenv("MYSQL_DATABASE"),
 	)
+
+	if SecretKey = []byte(os.Getenv("SECRET_KEY")); SecretKey == nil {
+		log.Fatal("SECRET_KEY não encontrado em .env")
+	}
 }
