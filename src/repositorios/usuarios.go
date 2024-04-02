@@ -128,3 +128,21 @@ func (repositorio Usuarios) Deletar(usuarioID uint64) error {
 
 	return nil
 }
+
+func (repositorio Usuarios) BuscarPorEmail(email string) (modelos.Usuario, error) {
+	statement, err := repositorio.db.Prepare("SELECT id, senha FROM usuarios where email = ?")
+	if err != nil {
+		return modelos.Usuario{}, err
+	}
+	defer statement.Close()
+
+	usuarioBanco := statement.QueryRow(email)
+
+	var usuario modelos.Usuario
+
+	if err := usuarioBanco.Scan(&usuario.ID, &usuario.Senha); err != nil {
+		return modelos.Usuario{}, err
+	}
+
+	return usuario, nil
+}

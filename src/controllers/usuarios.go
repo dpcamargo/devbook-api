@@ -66,7 +66,6 @@ func BuscarUsuarios(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respostas.JSON(w, http.StatusOK, usuarios)
-
 }
 
 func BuscarUsuario(w http.ResponseWriter, r *http.Request) {
@@ -90,6 +89,7 @@ func BuscarUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 	respostas.JSON(w, http.StatusOK, usuario)
 }
+
 func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 
@@ -129,6 +129,7 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 
 	respostas.JSON(w, http.StatusNoContent, nil)
 }
+
 func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 	
@@ -152,5 +153,4 @@ func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respostas.JSON(w, http.StatusNoContent, nil)
-
 }
