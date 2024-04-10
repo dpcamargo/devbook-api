@@ -112,6 +112,7 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 		respostas.Erro(w, http.StatusForbidden, errors.New("não é possível atualizar um usuário que não seja o seu"))
 
 	}
+
 	corpoRequest, err := io.ReadAll(r.Body)
 	if err != nil {
 		respostas.Erro(w, http.StatusUnprocessableEntity, err)
@@ -150,6 +151,17 @@ func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respostas.Erro(w, http.StatusBadRequest, err)
 		return
+	}
+
+	usuarioIDToken, err := autenticacao.ExtrairUsuarioID(r)
+	if err != nil {
+		respostas.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if usuarioID != usuarioIDToken {
+		respostas.Erro(w, http.StatusForbidden, errors.New("não é possível excluir um usuário que não seja o seu"))
+
 	}
 
 	db, err := banco.Conectar()
