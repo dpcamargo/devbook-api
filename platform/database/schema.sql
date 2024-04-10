@@ -1,6 +1,7 @@
 CREATE DATABASE IF NOT EXISTS devbook;
 USE devbook;
 
+DROP TABLE IF EXISTS seguidores;
 DROP TABLE IF EXISTS usuarios;
 
 CREATE TABLE usuarios (
@@ -11,4 +12,14 @@ CREATE TABLE usuarios (
   senha VARCHAR(100) NOT NULL,
   criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP() ,
   PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
+
+CREATE TABLE seguidores (
+  usuario_id INT NOT NULL, 
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+  
+  seguidor_id INT NOT NULL,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+
+  PRIMARY KEY(usuario_id, seguidor_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
