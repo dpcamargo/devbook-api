@@ -1,17 +1,20 @@
 package controllers
 
 import (
-	"api/src/banco"
-	"api/src/modelos"
-	"api/src/repositorios"
-	"api/src/respostas"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
+
+	"api/src/autenticacao"
+	"api/src/banco"
+	"api/src/modelos"
+	"api/src/repositorios"
+	"api/src/respostas"
 )
 
 func CriarUsuario(w http.ResponseWriter, r *http.Request) {
@@ -94,11 +97,21 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 
 	usuarioID, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
-	if err != nil {	
+	if err != nil {
 		respostas.Erro(w, http.StatusBadRequest, err)
 		return
 	}
 
+	usuarioIDToken, err := autenticacao.ExtrairUsuarioID(r)
+	if err != nil {
+		respostas.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if usuarioID != usuarioIDToken {
+		respostas.Erro(w, http.StatusForbidden, errors.New("não é possível atualizar um usuário que não seja o seu"))
+
+	}
 	corpoRequest, err := io.ReadAll(r.Body)
 	if err != nil {
 		respostas.Erro(w, http.StatusUnprocessableEntity, err)
@@ -132,7 +145,7 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 
 func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
-	
+
 	usuarioID, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
 	if err != nil {
 		respostas.Erro(w, http.StatusBadRequest, err)

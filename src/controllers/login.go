@@ -9,12 +9,12 @@ import (
 	"api/src/seguranca"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	corpo, err := ioutil.ReadAll(r.Body)
+	corpo, err := io.ReadAll(r.Body)
 	if err != nil {
 		respostas.Erro(w, http.StatusUnprocessableEntity, err)
 		return
@@ -49,5 +49,5 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respostas.Erro(w, http.StatusInternalServerError, err)
 	}
-	w.Write([]byte(fmt.Sprintf("VOCÊ ESTÄ LOGADO, ID %s", token)))
+	w.Write([]byte(fmt.Sprintf("%s", token)))
 }
