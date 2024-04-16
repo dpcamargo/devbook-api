@@ -15,6 +15,7 @@ import (
 	"api/src/modelos"
 	"api/src/repositorios"
 	"api/src/respostas"
+	"api/src/seguranca"
 )
 
 func CriarUsuario(w http.ResponseWriter, r *http.Request) {
@@ -213,7 +214,6 @@ func SeguirUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respostas.JSON(w, http.StatusNoContent, nil)
-
 }
 
 func PararDeSeguirUsuario(w http.ResponseWriter, r *http.Request) {
@@ -249,7 +249,6 @@ func PararDeSeguirUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respostas.JSON(w, http.StatusNoContent, nil)
-
 }
 
 func BuscarSeguidores(w http.ResponseWriter, r *http.Request) {
@@ -275,7 +274,6 @@ func BuscarSeguidores(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respostas.JSON(w, http.StatusOK, seguidores)
-
 }
 
 func BuscarSeguindo(w http.ResponseWriter, r *http.Request) {
@@ -302,4 +300,67 @@ func BuscarSeguindo(w http.ResponseWriter, r *http.Request) {
 
 	respostas.JSON(w, http.StatusOK, usuarios)
 
+}
+
+func AtualizarSenha(w http.ResponseWriter, r *http.Request) {
+	parametros := mux.Vars(r)
+	usuarioId, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	usuarioIdToken, err := autenticacao.ExtrairUsuarioID(r)
+	if err != nil {
+		respostas.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if usuarioId != usuarioIdToken {
+		respostas.Erro(w, http.StatusForbidden, errors.New("não é possível atualizar um usuário que não seja o seu"))
+		return
+	}
+
+	corpoRequisicao, err := io.ReadAll(r.Body)
+	if err != nil {
+		respostas.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	var senha modelos.Senha
+	if err := json.Unmarshal(corpoRequisicao, &senha); err != nil {
+		respostas.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := banco.Conectar()
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	senhaSalvaNoBanco, err := repositorio.BuscarSenha(usuarioId)
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if err := seguranca.VerificarSenha(senhaSalvaNoBanco, senha.Atual); err != nil {
+		respostas.Erro(w, http.StatusUnauthorized, errors.New("senha atual não condiz com senha do banco"))
+		return
+	}
+
+	senhaComHash, err := seguranca.Hash(senha.Nova)
+	if err != nil {
+		respostas.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := repositorio.AtualizarSenha(usuarioId, string(senhaComHash)); err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	respostas.JSON(w, http.StatusNoContent, nil)
 }
