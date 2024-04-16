@@ -252,7 +252,7 @@ func PararDeSeguirUsuario(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func BuscarSeguidores (w http.ResponseWriter, r *http.Request) {
+func BuscarSeguidores(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 	usuarioID, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
 	if err != nil {
@@ -275,5 +275,31 @@ func BuscarSeguidores (w http.ResponseWriter, r *http.Request) {
 	}
 
 	respostas.JSON(w, http.StatusOK, seguidores)
+
+}
+
+func BuscarSeguindo(w http.ResponseWriter, r *http.Request) {
+	parametros := mux.Vars(r)
+	usuarioID, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	db, err := banco.Conectar()
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	usuarios, err := repositorio.BuscarSeguindo(usuarioID)
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	respostas.JSON(w, http.StatusOK, usuarios)
 
 }
