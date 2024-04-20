@@ -57,7 +57,6 @@ func CriarPublicacao(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respostas.JSON(w, http.StatusCreated, publicacao)
-
 }
 
 func BuscarPublicacoes(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +81,6 @@ func BuscarPublicacoes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respostas.JSON(w, http.StatusOK, publicacoes)
-
 }
 
 func BuscarPublicacao(w http.ResponseWriter, r *http.Request) {
@@ -199,6 +197,82 @@ func DeletarPublicacao(w http.ResponseWriter, r *http.Request) {
 
 	if err := repositorio.Deletar(publicacaoID); err != nil {
 		respostas.Erro(w, http.StatusInternalServerError, err)
+	}
+
+	respostas.JSON(w, http.StatusNoContent, nil)
+}
+
+func BuscarPublicacoesPorUsuario(w http.ResponseWriter, r *http.Request) {
+	parametros := mux.Vars(r)
+	usuarioId, err := strconv.ParseUint(parametros["usuarioId"], 10, 64)
+	if err != nil {
+		respostas.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := banco.Conectar()
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioDePublicacoes(db)
+
+	publicacoes, err := repositorio.BuscarPorUsuario(usuarioId)
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	respostas.JSON(w, http.StatusOK, publicacoes)
+}
+
+func CurtirPublicacao(w http.ResponseWriter, r *http.Request) {
+	parametros := mux.Vars(r)
+	publicacaoID, err := strconv.ParseUint(parametros["publicacaoId"], 10, 64)
+	if err != nil {
+		respostas.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := banco.Conectar()
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioDePublicacoes(db)
+
+	if err := repositorio.Curtir(publicacaoID); err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	respostas.JSON(w, http.StatusNoContent, nil)
+}
+
+func DescurtirPublicacao(w http.ResponseWriter, r *http.Request) {
+	parametros := mux.Vars(r)
+	publicacaoID, err := strconv.ParseUint(parametros["publicacaoId"], 10, 64)
+	if err != nil {
+		respostas.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := banco.Conectar()
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioDePublicacoes(db)
+
+	if err := repositorio.Descurtir(publicacaoID); err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
 	}
 
 	respostas.JSON(w, http.StatusNoContent, nil)
